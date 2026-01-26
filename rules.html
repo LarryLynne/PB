@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PakaBuka Rules</title>
+    <link href="https://fonts.googleapis.com/css2?family=Russo+One&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" href="favicon.png">
+    
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #948181; /* Основной цвет фона игры */
+            color: #fff;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 800px;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 30px;
+            border-radius: 15px;
+            border: 2px solid #555;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+
+        h1 {
+            font-family: 'Luckiest Guy', cursive;
+            color: #FFD700;
+            text-align: center;
+            letter-spacing: 2px;
+            margin-top: 0;
+            text-shadow: 2px 2px 0 #000;
+            font-size: 2.5em;
+        }
+
+        h3 {
+            color: #4CAF50; /* Зеленый старт */
+            border-bottom: 1px solid #555;
+            padding-bottom: 5px;
+            margin-top: 25px;
+        }
+
+        strong { color: #FFD700; }
+        .red-text { color: #F44336; font-weight: bold; }
+        .blue-text { color: #00FFFF; font-weight: bold; }
+
+        /* Переключатель языков */
+        .lang-switch {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .lang-btn {
+            background: rgba(255,255,255,0.1);
+            border: 2px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+
+        .lang-btn:hover, .lang-btn.active {
+            background: #FFD700;
+            color: black;
+            border-color: #FFD700;
+        }
+
+        /* Кнопка назад */
+        .back-btn {
+            display: inline-block;
+            margin-bottom: 20px;
+            text-decoration: none;
+            color: #aaa;
+            font-weight: bold;
+            border: 1px solid #aaa;
+            padding: 5px 15px;
+            border-radius: 5px;
+            transition: 0.2s;
+        }
+        .back-btn:hover { background: #fff; color: #000; }
+
+        .rules-content { display: none; }
+        .rules-content.active { display: block; animation: fadeIn 0.5s; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; } to { opacity: 1; }
+        }
+
+        ul { line-height: 1.6; }
+        li { margin-bottom: 8px; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <a href="index.html" class="back-btn">⬅ Back to Game</a>
+
+        <div class="lang-switch">
+            <button class="lang-btn active" onclick="setLang('ua', this)">UA</button>
+            <button class="lang-btn" onclick="setLang('en', this)">EN</button>
+            <button class="lang-btn" onclick="setLang('ru', this)">RU</button>
+        </div>
+
+        <div id="ua" class="rules-content active">
+            <h1>Правила Гри</h1>
+            <p><strong>Мета:</strong> Першим провести всі свої 5 фішок через поле до Фінішної зони.</p>
+
+            <h3>🎲 Хід гри</h3>
+            <ul>
+                <li>Гравці кидають два кубики. <strong>Значення не сумуються!</strong></li>
+                <li>Ви можете використати один кубик для однієї фішки, а другий — для іншої. Або обидва для однієї по черзі.</li>
+                <li><strong>Дубль (6-6):</strong> дає додатковий хід.</li>
+                <li>Стрибати через фішки (свої чи чужі) <strong>не можна</strong>.</li>
+            </ul>
+
+            <h3>🚀 Старт та Вихід</h3>
+            <ul>
+                <li>Щоб вийти зі Старту (зелена зона), треба викинути <strong>6</strong>.</li>
+                <li>Вийти не можна, якщо клітинка виходу зайнята вашою фішкою.</li>
+            </ul>
+
+            <h3>⚔️ Полон (Унікальна механіка)</h3>
+            <ul>
+                <li>Якщо ви стаєте на клітинку з фішкою ворога, ви берете її в <span class="red-text">Полон</span>.</li>
+                <li>Полонений відправляється у <strong>ВАШУ тюрму</strong> (червона зона біля вашого старту).</li>
+                <li>Якщо у вашій тюрмі немає місць, рубати ворога не можна.</li>
+            </ul>
+
+            <h3>🔓 Втеча та Бонус</h3>
+            <ul>
+                <li>Щоб втекти з чужого полону, фішка має викинути <strong>6</strong>.</li>
+                <li>Вона повертається на свій Старт.</li>
+                <li><strong>БОНУС:</strong> Коли в'язень тікає, Тюремник (охоронець) отримує миттєвий безкоштовний хід на <strong>6 клітинок</strong>!</li>
+            </ul>
+
+            <h3>🌀 Телепорти та Центр</h3>
+            <ul>
+                <li><strong>Центр:</strong> Вхід та Вихід можливий тільки при викиданні <strong>3</strong>.</li>
+                <li><strong>Стрілки:</strong> Автоматично переносять фішку вперед або назад.</li>
+                <li><strong>Магічні точки (кути):</strong> Якщо випала <strong>1</strong>, можна телепортуватися.</li>
+            </ul>
+        </div>
+
+        <div id="en" class="rules-content">
+            <h1>Game Rules</h1>
+            <p><strong>Goal:</strong> Be the first to move all 5 pieces around the board to your Finish zone.</p>
+
+            <h3>🎲 Gameplay</h3>
+            <ul>
+                <li>Players roll two dice. <strong>Values are NOT summed up!</strong></li>
+                <li>You can use one die for one piece and the second for another. Or both for the same piece sequentially.</li>
+                <li><strong>Double (6-6):</strong> Grants an extra turn.</li>
+                <li>You <strong>cannot</strong> jump over pieces (yours or opponents').</li>
+            </ul>
+
+            <h3>🚀 Start & Exit</h3>
+            <ul>
+                <li>To exit the Start (green zone), you must roll a <strong>6</strong>.</li>
+                <li>You cannot exit if the spawn point is blocked by your own piece.</li>
+            </ul>
+
+            <h3>⚔️ Capture & Prison</h3>
+            <ul>
+                <li>If you land on an opponent's piece, you capture it into <span class="red-text">Prison</span>.</li>
+                <li>The captured piece goes to <strong>YOUR Prison</strong> (red zone near your start), not their home.</li>
+                <li>If your prison is full, you cannot capture enemies.</li>
+            </ul>
+
+            <h3>🔓 Escape & Warden Bonus</h3>
+            <ul>
+                <li>To escape from Prison, the captured piece must roll a <strong>6</strong>.</li>
+                <li>It returns to its owner's Start.</li>
+                <li><strong>WARDEN BONUS:</strong> When a prisoner escapes, the Warden (you) immediately gets a free move of <strong>6 steps</strong> with any piece!</li>
+            </ul>
+
+            <h3>🌀 Teleports & Center</h3>
+            <ul>
+                <li><strong>Center:</strong> Enter and Exit is only possible by rolling a <strong>3</strong>.</li>
+                <li><strong>Arrows:</strong> Automatically move the piece forward or backward.</li>
+                <li><strong>Magic Points (Corners):</strong> If you roll a <strong>1</strong>, you can teleport to the next sector.</li>
+            </ul>
+        </div>
+
+        <div id="ru" class="rules-content">
+            <h1>Правила Игры</h1>
+            <p><strong>Цель:</strong> Первым провести все свои 5 фишек через поле в Финишную зону.</p>
+
+            <h3>🎲 Ход игры</h3>
+            <ul>
+                <li>Игроки бросают два кубика. <strong>Значения не суммируются!</strong></li>
+                <li>Вы можете использовать один кубик для одной фишки, а второй — для другой. Либо оба для одной по очереди.</li>
+                <li><strong>Дубль (6-6):</strong> Дает дополнительный ход.</li>
+                <li>Перепрыгивать через фишки (свои или чужие) <strong>нельзя</strong>.</li>
+            </ul>
+
+            <h3>🚀 Старт и Выход</h3>
+            <ul>
+                <li>Чтобы выйти со Старта (зеленая зона), нужно выбросить <strong>6</strong>.</li>
+                <li>Выйти нельзя, если клетка выхода занята вашей фишкой.</li>
+            </ul>
+
+            <h3>⚔️ Плен (Уникальная механика)</h3>
+            <ul>
+                <li>Если вы встаете на клетку с фишкой врага, вы берете её в <span class="red-text">Плен</span>.</li>
+                <li>Пленник отправляется в <strong>ВАШУ тюрьму</strong> (красная зона возле вашего старта).</li>
+                <li>Если в вашей тюрьме нет мест, рубить врага нельзя.</li>
+            </ul>
+
+            <h3>🔓 Побег и Бонус</h3>
+            <ul>
+                <li>Чтобы сбежать из чужого плена, фишка должна выбросить <strong>6</strong>.</li>
+                <li>Она возвращается на свой Старт.</li>
+                <li><strong>БОНУС:</strong> Когда пленник сбегает, Тюремщик (охранявший игрок) получает мгновенный бесплатный ход на <strong>6 клеток</strong>!</li>
+            </ul>
+
+            <h3>🌀 Телепорты и Центр</h3>
+            <ul>
+                <li><strong>Центр:</strong> Вход и Выход возможен только при выпадении <strong>3</strong>.</li>
+                <li><strong>Стрелки:</strong> Автоматически переносят фишку вперед или назад.</li>
+                <li><strong>Магические точки (углы):</strong> Если выпала <strong>1</strong>, можно телепортироваться.</li>
+            </ul>
+        </div>
+
+    </div>
+
+    <script>
+        function setLang(lang, btn) {
+            // Скрыть все блоки
+            document.querySelectorAll('.rules-content').forEach(el => el.classList.remove('active'));
+            // Показать нужный
+            document.getElementById(lang).classList.add('active');
+            
+            // Обновить кнопки
+            document.querySelectorAll('.lang-btn').forEach(el => el.classList.remove('active'));
+            if(btn) btn.classList.add('active');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes"> <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"> <meta name="mobile-web-app-capable" content="yes"> <meta name="theme-color" content="#948181"> <title>PakaBuka</title>
+    <title>ПакаБука</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Russo+One&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" href="favicon.png">
+</head>
+<body class="menu-active">
+    <div id="start-menu">
+        <h1>PakaBuka</h1>
+        <p>Select players count:</p>
+        <div class="menu-buttons">
+            <button onclick="game.start(2)">2</button>
+            <button onclick="game.start(3)">3</button>
+            <button onclick="game.start(4)">4</button>
+        </div>
+        <div style="margin-top: 30px;">
+            <a href="rules.html" style="color: #aaa; text-decoration: none; font-size: 18px; border-bottom: 1px dotted #aaa;">
+                Rules / Правила
+            </a>
+        </div>
+    </div>
+    <div id="bot-setup-overlay" style="display: none;">
+        <div class="bot-setup-box">
+            <h2>WHO IS BOT?</h2>
+            <div id="bot-rows-container">
+                </div>
+            <button class="start-confirm-btn" onclick="game.confirmStart()">GO!</button>
+        </div>
+    </div>
+
+    <div id="modal-overlay">
+        <div id="modal-box">
+            <div id="modal-options"></div>
+        </div>
+    </div>
+    <div id="test-badge" style="display: none;">Debug mode</div>
+        <div id="debug-panel">
+        <h3 style="margin: 0 0 10px 0; color: #FFD700;">Настройки UI</h3>
+        <label>
+            Фон:
+            <input type="color" id="cfg-bg" value="#948181" oninput="game.updateStyle('--bg-color', this.value)">
+        </label>
+        <label>
+            Точки (Цвет):
+            <input type="color" id="cfg-dot-color" value="#252525" oninput="game.updateStyle('--dot-color', this.value)">
+        </label>
+        <label>
+            Точки (Размер):
+            <input type="range" id="cfg-dot-size" min="4" max="20" value="8" oninput="game.updateStyle('--dot-size', this.value + 'px')">
+        </label>
+        <label>
+            Линии:
+            <input type="color" id="cfg-line" value="#444444" oninput="game.updateStyle('--line-color', this.value)">
+        </label>
+    </div>
+    <div id="game-field">
+        
+        <div id="center-hud">
+            <div class="dice-container">
+                <div id="dice1" class="dice-box">-</div>
+                <div id="dice2" class="dice-box">-</div>
+            </div>
+            <button id="roll-btn" onclick="game.rollDice()">Throw</button>
+            <div id="status-msg"></div>
+        </div>
+    </div>
+    <canvas id="fireworks-canvas"></canvas>
+    <script type="module" src="main.js"></script>
+</body>
+</html>
