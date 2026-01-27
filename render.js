@@ -183,33 +183,48 @@ export function renderGame(game) {
 }
 
 export function updateUI(game, getDiceSvg) {
-    const d1El = document.getElementById('dice1');
-    const d2El = document.getElementById('dice2');
-    const btn = document.getElementById('roll-btn');
+    // Массив всех ID кубиков: [Группа1_кубик0, Группа1_кубик1, Группа2_кубик0, Группа2_кубик1]
+    const diceIds = [
+        ['dice-set1-0', 'dice-set2-0'], // Индекс 0
+        ['dice-set1-1', 'dice-set2-1']  // Индекс 1
+    ];
+    
+    // Обновляем оба комплекта
+    [0, 1].forEach(index => {
+        const val = game.dice[index];
+        const svg = val ? getDiceSvg(val) : '-';
+        const isUsed = game.diceUsed[index];
+        const isSelected = (game.selectedDieIndex === index);
 
-    d1El.innerHTML = game.dice[0] ? getDiceSvg(game.dice[0]) : '-';
-    d2El.innerHTML = game.dice[1] ? getDiceSvg(game.dice[1]) : '-';
-    
-    d1El.style.borderColor = (game.selectedDieIndex === 0) ? "#fff" : "rgba(255,255,255,0.3)";
-    d2El.style.borderColor = (game.selectedDieIndex === 1) ? "#fff" : "rgba(255,255,255,0.3)";
-    
-    d1El.style.opacity = game.diceUsed[0] ? "0.2" : "1";
-    d2El.style.opacity = game.diceUsed[1] ? "0.2" : "1";
+        // Обходим зеркальные кубики (левый и правый)
+        diceIds[index].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.innerHTML = svg;
+                
+                // Классы для стилей
+                if (isSelected) el.classList.add('selected');
+                else el.classList.remove('selected');
+                
+                if (isUsed) el.classList.add('used');
+                else el.classList.remove('used');
+                
+                // Цвет текущего игрока
+                let activeColor = "#fff";
+                 if (game.phase === 'bonus') {
+                    const warden = game.players.find(p => p.id === game.bonusPlayerId);
+                    if(warden) activeColor = warden.color;
+                } else {
+                    const player = game.players[game.turn];
+                    if (player) activeColor = player.color;
+                }
+                el.style.color = activeColor;
+                el.style.borderColor = isSelected ? "#fff" : "rgba(255,255,255,0.3)";
+            }
+        });
+    });
 
-    btn.disabled = (game.phase !== 'roll');
-    
-    let activeColor = "#fff";
-    if (game.phase === 'bonus') {
-        const warden = game.players.find(p => p.id === game.bonusPlayerId);
-        if(warden) activeColor = warden.color;
-    } else {
-        const player = game.players[game.turn];
-        if (player) activeColor = player.color;
-    }
-    d1El.style.color = activeColor;
-    d2El.style.color = activeColor;
-    btn.style.color = activeColor;
-    btn.style.borderColor = !btn.disabled ? activeColor : "rgba(255,255,255,0.2)";
+    // Кнопку roll-btn больше не ищем, её нет
 }
 
 function drawLine(p1, p2, color, width = 2) {
@@ -244,26 +259,23 @@ function drawCurvedArrow(p1, p2) {
 }
 
 function updateGameFieldSize() {
-    const w = window.innerWidth;
-    const h = window.innerHeight;
-    let size;
-    const isMobilePortrait = w <= 768 && h > w;
-    const isMobileLandscape = h <= 600 && w > h;
+    const container = document.getElementById('field-container');
+    const field = document.getElementById('game-field');
+    if (!container || !field) return;
 
-    if (isMobilePortrait) {
-        size = Math.min(w * 0.95, h * 0.70);
-        gameField.style.marginTop = "-10%"; 
-    } else if (isMobileLandscape) {
-        size = Math.min(w * 0.80, h * 0.95);
-        gameField.style.marginTop = "0";
-        gameField.style.marginLeft = "-10%"; 
-    } else {
-        size = Math.min(w, h) * 0.95;
-        gameField.style.marginTop = "0";
-        gameField.style.marginLeft = "0";
-    }
-    gameField.style.width = `${size}px`;
-    gameField.style.height = `${size}px`;
+    const w = container.clientWidth;
+    const h = container.clientHeight;
+    
+    // Делаем поле максимально большим квадратом, который влезает в центр
+    // Оставляем небольшой отступ (padding), например 10px
+    const size = Math.min(w, h) - 20; 
+
+    field.style.width = `${size}px`;
+    field.style.height = `${size}px`;
+    
+    // Сбрасываем старые марджины
+    field.style.marginTop = "0";
+    field.style.marginLeft = "0";
 }
 
 // render.js

@@ -70,6 +70,26 @@ const game = {
         if (this.players[this.turn].isBot) setTimeout(() => this.botTurnRoutine(), 500);
     },
     // --- ЛОГИКА ---
+
+    tryRoll: function() {
+        // Разрешаем бросок только в фазе roll и если не бот
+        if (this.phase === 'roll' && !this.players[this.turn].isBot) {
+            
+            // Визуальный эффект нажатия (подсветка панелей)
+            const p1 = document.getElementById('panel-1');
+            const p2 = document.getElementById('panel-2');
+            if(p1) p1.style.backgroundColor = "rgba(255,255,255,0.05)";
+            if(p2) p2.style.backgroundColor = "rgba(255,255,255,0.05)";
+            
+            setTimeout(() => {
+                if(p1) p1.style.backgroundColor = "";
+                if(p2) p2.style.backgroundColor = "";
+            }, 150);
+
+            this.rollDice();
+        }
+    },
+
     rollDice: function() {
         if (this.phase !== 'roll') return;
         
@@ -807,8 +827,8 @@ const game = {
 game.init();
 
 // Вешаем слушатели
-document.getElementById('dice1').onclick = () => game.selectDie(0);
-document.getElementById('dice2').onclick = () => game.selectDie(1);
+/*document.getElementById('dice1').onclick = () => game.selectDie(0);
+document.getElementById('dice2').onclick = () => game.selectDie(1);*/
 // main.js (в самом низу файла)
 
 document.addEventListener('keydown', function(event) {
@@ -819,25 +839,10 @@ document.addEventListener('keydown', function(event) {
 
     // 2. Бросок кубиков (Пробел)
     if (event.code === 'Space' || event.key === ' ') {
-        // Отменяем стандартное поведение (чтобы страница не скроллилась вниз)
-        event.preventDefault(); 
+        event.preventDefault(); // Чтобы страница не прыгала
         
-        // Получаем текущего игрока
-        const player = game.players[game.turn];
-
-        // Разрешаем бросок только если:
-        // - Сейчас фаза 'roll' (ждем броска)
-        // - Игрок существует и это НЕ бот
-        // - Кнопка броска физически не заблокирована (на всякий случай)
-        if (game.phase === 'roll' && player && !player.isBot) {
-            // Визуальный эффект нажатия кнопки (опционально, для красоты)
-            const btn = document.getElementById('roll-btn');
-            if (btn) {
-                btn.style.transform = "scale(0.95)";
-                setTimeout(() => btn.style.transform = "", 100);
-            }
-
-            game.rollDice();
-        }
+        // Просто вызываем нашу новую функцию попытки броска
+        // Она сама мигнет панелями и проверит, можно ли бросать
+        game.tryRoll();
     }
 });

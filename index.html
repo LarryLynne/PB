@@ -74,16 +74,27 @@
             <input type="color" value="#00ffff" oninput="game.updateStyle('--arrow-color', this.value)">
         </label>
     </div>
-    <div id="game-field">
-        
-        <div id="center-hud">
-            <div class="dice-container">
-                <div id="dice1" class="dice-box">-</div>
-                <div id="dice2" class="dice-box">-</div>
+    <div id="main-layout">
+        <div id="panel-1" class="control-panel" onclick="game.tryRoll()">
+            <div class="dice-group">
+                <div id="dice-set1-0" class="dice-box" onclick="event.stopPropagation(); game.selectDie(0)">-</div>
+                <div id="dice-set1-1" class="dice-box" onclick="event.stopPropagation(); game.selectDie(1)">-</div>
             </div>
-            <button id="roll-btn" onclick="game.rollDice()">Throw</button>
-            <div id="status-msg"></div>
         </div>
+
+        <div id="field-container">
+            <div id="game-field">
+                </div>
+        </div>
+
+        <div id="panel-2" class="control-panel" onclick="game.tryRoll()">
+            <div class="dice-group">
+                <div id="dice-set2-0" class="dice-box" onclick="event.stopPropagation(); game.selectDie(0)">-</div>
+                <div id="dice-set2-1" class="dice-box" onclick="event.stopPropagation(); game.selectDie(1)">-</div>
+            </div>
+        </div>
+        
+        
     </div>
     <canvas id="fireworks-canvas"></canvas>
     <script type="module" src="main.js"></script>

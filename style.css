@@ -148,54 +148,6 @@ body {
 
 .dice-box:active { transform: scale(0.95); }
 
-button#roll-btn {
-    pointer-events: auto;
-    
-    /* === ДЕЛАЕМ КРУГ === */
-    width: 80px;  /* Фиксированная ширина */
-    height: 80px; /* Фиксированная высота (равна ширине) */
-    border-radius: 50%; /* Превращает квадрат в круг */
-    padding: 0;   /* Убираем внутренние отступы */
-    
-    /* Центрируем текст внутри круга */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    
-    /* Оформление текста */
-    font-size: 11px; /* Чуть меньше, чтобы длинные слова влезли */
-    font-weight: bold;
-    text-transform: uppercase;
-    
-    /* Цвета и эффекты (Glassmorphism) */
-    color: white;
-    background: rgba(255,255,255,0.1);
-    border: 2px solid rgba(255,255,255,0.5); /* Рамка чуть толще */
-    cursor: pointer;
-    transition: 0.2s;
-    backdrop-filter: blur(4px);
-    
-    /* Тень, чтобы кнопка казалась объемной */
-    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-}
-
-button#roll-btn:hover {
-    background: rgba(255,255,255,0.3);
-    box-shadow: 0 0 15px currentColor, 0 5px 10px rgba(0,0,0,0.5);
-    transform: scale(1.1); /* Небольшое увеличение при наведении */
-}
-
-button#roll-btn:active {
-    transform: scale(0.95);
-}
-
-button#roll-btn:disabled {
-    opacity: 0.3;
-    cursor: default;
-    box-shadow: none;
-    transform: none;
-}
-
 #turn-info { text-align: center; font-size: 16px; font-weight: bold; margin-bottom: 5px; }
 #status-msg {
     position: relative; /* Вернем в поток */
@@ -381,37 +333,7 @@ svg { z-index: 1; }
     100% { width: 500%; height: 500%; opacity: 0; border-width: 0px; }
 }
 
-#center-hud {
-    position: absolute;
-    /* Позиция по вертикали (как ты хотел, внизу) */
-    top: 85%; 
-    
-    /* СТРОГОЕ ЦЕНТРИРОВАНИЕ ПО ГОРИЗОНТАЛИ */
-    left: 50%; 
-    transform: translate(-50%, -50%); /* Центруем и по X, и по Y относительно точки */
-    
-    /* Теперь ширина зависит от размера поля */
-    width: 40%; /* Займет 40% ширины игрового поля. Можешь менять число */
-    height: auto;
-    
-    background: none;
-    border: none;
-    box-shadow: none;
-    border-radius: 0;
 
-    z-index: 30;
-    
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    
-    pointer-events: none; 
-}
-
-#center-hud > * {
-    pointer-events: auto;
-}
 
 .game-logo {
     position: absolute;
@@ -445,57 +367,20 @@ svg { z-index: 1; }
 /* Лого сверху, Кубики снизу, Поле посередине */
 @media (max-width: 768px) and (orientation: portrait) {
     
-    /* Логотип выносим наверх экрана */
-    .game-logo {
-        position: fixed; /* Фиксируем относительно экрана, а не поля */
-        top: 30px;
-        left: 50%;
-        transform: translateX(-50%);
+    #field-container {
+        flex: 1;
         width: 100%;
-        text-align: center;
-        font-size: 3em; /* Крупнее */
-        z-index: 1000;
+        
+        /* СБРАСЫВАЕМ ВЕРТИКАЛЬНЫЕ ГРАНИЦЫ */
+        border-left: none;
+        border-right: none;
+        
+        /* ДОБАВЛЯЕМ ГОРИЗОНТАЛЬНЫЕ (Сверху и снизу) */
+        border-top: 2px solid rgba(255, 215, 0, 0.2);
+        border-bottom: 2px solid rgba(255, 215, 0, 0.2);
     }
 
-    /* Панель управления прибиваем к низу экрана */
-    #center-hud {
-        position: fixed;
-        top: auto;
-        bottom: 20px;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 90%;
-        
-        /* ВАЖНО: Сам контейнер прозрачный и пропускает клики сквозь пустое место */
-        pointer-events: none; 
-        
-        /* Убираем весь фон и рамки */
-        background: none;
-        border: none;
-        box-shadow: none;
-        backdrop-filter: none;
-        padding: 0;
-        
-        z-index: 1000;
-        
-        /* Выстраиваем элементы */
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 15px; /* Отступ между кубиками и кнопкой */
-    }
-    #center-hud > * {
-        pointer-events: auto;
-    }
-
-    button#roll-btn {
-        /*width: 100%; /* Кнопка во всю ширину для удобства пальца */
-        padding: 15px;
-        font-size: 18px;
-        width: 70px;
-        height: 70px;
-        font-size: 12px;
-    }
+    
 }
 
 /* --- 2. Мобильный ГОРИЗОНТАЛЬНЫЙ (Landscape) --- */
@@ -541,12 +426,6 @@ svg { z-index: 1; }
         margin-bottom: 5px;
     }
 
-    button#roll-btn {
-        width: 100%;
-        font-size: 14px;
-        white-space: normal;
-        line-height: 1.2;
-    }
     
     #status-msg {
         display: none; /* На узком экране статус может мешать, лучше скрыть или уменьшить */
@@ -671,3 +550,144 @@ input:checked + .slider {
 input:checked + .slider:before {
   transform: translateX(24px);
 }
+
+/* style.css */
+
+/* --- LAYOUT (СЕТКА) --- */
+#main-layout {
+    display: flex;
+    width: 100vw;
+    height: 100dvh; /* dynamic viewport height */
+    overflow: hidden;
+    background-color: var(--bg-color);
+}
+
+/* Панели управления (боковые/верхние) */
+.control-panel {
+    flex: 1; /* Занимают свободное место */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    z-index: 50;
+    
+    /* Делаем их кликабельными как кнопки */
+    cursor: pointer; 
+    transition: background-color 0.2s;
+}
+
+/* Эффект нажатия на всю панель */
+.control-panel:active {
+    background-color: rgba(0, 0, 0, 0.1); 
+}
+
+/* Контейнер для поля */
+#field-container {
+    /* На ПК поле занимает больше места (60% примерно) */
+    flex: 3; 
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    z-index: 10;
+}
+
+#game-field {
+    position: relative;
+    /* Размеры теперь задает JS, вписывая в #field-container */
+    background-color: var(--bg-color); 
+}
+
+/* Группа кубиков внутри панели */
+.dice-group {
+    display: flex;
+    gap: 20px;
+    pointer-events: none; /* Чтобы клики сквозь пустоту шли в панель */
+}
+
+/* Сами кубики должны ловить клики (для выбора) */
+.dice-box {
+    width: 3.5em; /* Чуть крупнее */
+    height: 3.5em;
+    /* ... старые стили кубиков (фон, бордюр) ... */
+    background: rgba(255,255,255,0.1);
+    color: white;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-radius: 12px;
+    display: flex; justify-content: center; align-items: center;
+    backdrop-filter: blur(2px);
+    will-change: opacity, transform;
+    pointer-events: auto; /* Включаем клики на самих кубиках */
+    transition: transform 0.2s, border-color 0.2s;
+}
+
+.dice-box svg {
+    width: 70%; height: 70%;
+    fill: currentColor;
+    filter: drop-shadow(0 2px 3px rgba(0,0,0,0.5));
+}
+
+/* Подсветка выбранного кубика */
+.dice-box.selected {
+    border-color: #fff;
+    box-shadow: 0 0 15px rgba(255,255,255,0.5);
+    transform: scale(1.1);
+}
+.dice-box.used {
+    opacity: 0.3;
+    transform: scale(0.9);
+}
+
+
+/* === АДАПТИВНОСТЬ === */
+
+/* 1. DEKSTOP (Горизонтально) - Default Flex Row */
+/* Специально ничего писать не надо, flex-direction: row по умолчанию */
+
+
+/* 2. MOBILE (Portrait) - Вертикально */
+@media (max-width: 768px) and (orientation: portrait) {
+    #main-layout {
+        flex-direction: column; /* Сверху вниз */
+    }
+    
+    .control-panel {
+        flex: 0 0 15%; /* Фиксируем высоту панелей */
+        width: 100%;
+    }
+    
+    #field-container {
+        flex: 1; /* Поле занимает всё остальное место */
+        width: 100%;
+        
+        /* ВАЖНО: Убираем боковые границы (они для компа) */
+        border-left: none;
+        border-right: none;
+        
+        /* ВАЖНО: Добавляем границы СВЕРХУ и СНИЗУ */
+        border-top: 2px solid rgba(255, 215, 0, 0.2);
+        border-bottom: 2px solid rgba(255, 215, 0, 0.2);
+    }
+    
+    /* Исправил опечатку: нужен пробел перед .dice-group */
+    #panel-1.dice-group {
+          transform: rotate(180deg);  /*<-- Если хочешь перевернуть верхние кубики */
+    }
+}
+
+/* 3. MOBILE (Landscape) - Горизонтально, но узко */
+@media (max-height: 600px) and (orientation: landscape) {
+    .control-panel {
+        flex: 0 0 15%; /* Узкие боковые полоски */
+    }
+    .dice-group {
+        flex-direction: column; /* Кубики друг под другом, чтоб влезли */
+        gap: 10px;
+    }
+    .dice-box {
+        font-size: 14px; /* Уменьшаем кубики */
+    }
+}
+
+/* Удаляем старые стили HUD, они больше не нужны */
+#center-hud, #roll-btn { display: none !important; }
