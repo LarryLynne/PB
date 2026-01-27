@@ -573,7 +573,7 @@ input:checked + .slider:before {
     
     /* Делаем их кликабельными как кнопки */
     cursor: pointer; 
-    transition: background-color 0.2s;
+    transition: background-color 0.5s ease-in-out;
 }
 
 /* Эффект нажатия на всю панель */
@@ -590,6 +590,8 @@ input:checked + .slider:before {
     align-items: center;
     position: relative;
     z-index: 10;
+    border: none !important;
+    box-shadow: 0 0 50px rgba(0,0,0,0.5);
 }
 
 #game-field {
@@ -661,12 +663,11 @@ input:checked + .slider:before {
         width: 100%;
         
         /* ВАЖНО: Убираем боковые границы (они для компа) */
-        border-left: none;
-        border-right: none;
+        border: none !important;
         
         /* ВАЖНО: Добавляем границы СВЕРХУ и СНИЗУ */
-        border-top: 2px solid rgba(255, 215, 0, 0.2);
-        border-bottom: 2px solid rgba(255, 215, 0, 0.2);
+        /*border-top: 2px solid rgba(255, 215, 0, 0.2);
+        border-bottom: 2px solid rgba(255, 215, 0, 0.2);*/
     }
     
     /* Исправил опечатку: нужен пробел перед .dice-group */
