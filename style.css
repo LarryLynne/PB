@@ -9,7 +9,12 @@
     --arrow-color: #e8d696;
 }
 
+* {
+    -webkit-tap-highlight-color: transparent;
+}
+
 body {
+    touch-action: manipulation;
     font-family: Arial, sans-serif;
     margin: 0; padding: 0;
     display: flex; justify-content: center; align-items: center;
@@ -91,6 +96,7 @@ body {
     display: flex; justify-content: center; align-items: center;
     font-size: 24px; font-weight: bold;
     backdrop-filter: blur(2px);
+    will-change: opacity, transform;
 }
 
 .dice-box svg {
@@ -178,6 +184,7 @@ button#roll-btn:disabled {
         
     cursor: pointer; 
     transition: top 0.3s, left 0.3s, transform 0.2s, box-shadow 0.2s;
+    will-change: top, left, transform;
 }
 .piece:hover { 
     /* При наведении фишка увеличивается и светится ярче */
@@ -257,6 +264,7 @@ svg { z-index: 1; }
     
     animation: flowLine 1s linear infinite;
     opacity: 0.8;
+    will-change: stroke-dashoffset;
 }
 
 @keyframes flowLine {
@@ -287,6 +295,7 @@ svg { z-index: 1; }
     cursor: pointer;
     /* Небольшая анимация самой точки */
     animation: core-pulse 1.5s infinite ease-in-out;
+    will-change: transform, box-shadow;
 }
 
 .point[id^="Финиш"].highlight-dest {
@@ -299,6 +308,11 @@ svg { z-index: 1; }
     to { transform: translate(-50%, -50%) scale(1.6); opacity: 1; }
 }
 
+.point.highlight-dest::after,
+.point.highlight-dest::before {
+    /* ... */
+    will-change: transform, opacity; /* Добавляем */
+}
 /* Создаем пульсирующий прицел вокруг точки */
 .point.highlight-dest::after {
     content: '';
