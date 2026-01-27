@@ -30,7 +30,7 @@ export function initRender() {
     marker.setAttribute("orient", "auto");
     const poly = document.createElementNS(svgNS, "path");
     poly.setAttribute("d", "M0,0 L6,3 L0,6 L1.5,3 Z");
-    poly.setAttribute("fill", "#00ffff");
+    poly.style.fill = "var(--arrow-color)";
     marker.appendChild(poly);
     defs.appendChild(marker);
     svgArrows.appendChild(defs);
@@ -79,6 +79,16 @@ export function renderGame(game) {
     }
 
     // 4. Отрисовка Точек (с цветными ореолами)
+    // Определяем цвет активного игрока для подсветки
+    let activeHighlightColor = "#ffffff"; // Белый по умолчанию
+    if (game.phase === 'bonus' && game.bonusPlayerId) {
+        const p = game.players.find(x => x.id === game.bonusPlayerId);
+        if (p) activeHighlightColor = p.color;
+    } else if (game.players[game.turn]) {
+        activeHighlightColor = game.players[game.turn].color;
+    }
+
+    // 4. Отрисовка Точек
     points.forEach(point => {
         const div = document.createElement("div");
         div.className = "point";
@@ -88,23 +98,31 @@ export function renderGame(game) {
         // Подсветка целей
         if (game.activeDestinations.includes(point.id)) {
             div.classList.add("highlight-dest");
+            // ПЕРЕДАЕМ ЦВЕТ ИГРОКА В CSS-ПЕРЕМЕННУЮ
+            div.style.setProperty('--dest-color', activeHighlightColor);
+            
             div.onclick = (e) => {
                 e.stopPropagation();
                 game.handlePointClick(point.id);
             };
         }
         
-        // ЦВЕТНЫЕ ОРЕОЛЫ (Желтые/Красные)
+        // ЦВЕТНЫЕ ОРЕОЛЫ (Желтые/Красные на поле) — оставляем как есть, но понижаем z-index, если это цель
         if (typeof point.id === 'number') {
             if (point.id % 6 === 0) {
-                div.style.boxShadow = "0 0 0 4px rgba(255, 0, 0, 0.6)";
-                div.style.zIndex = "3";
+                // ИСПОЛЬЗУЕМ ПЕРЕМЕННУЮ --spec-6
+                div.style.boxShadow = "0 0 0 4px var(--spec-6)";
+                
+                if(!div.classList.contains("highlight-dest")) div.style.zIndex = "3";
             } else if (point.id % 3 === 0) {
-                div.style.boxShadow = "0 0 0 4px rgba(255, 235, 59, 0.8)";
-                div.style.zIndex = "3";
+                // ИСПОЛЬЗУЕМ ПЕРЕМЕННУЮ --spec-3
+                div.style.boxShadow = "0 0 0 4px var(--spec-3)";
+                
+                if(!div.classList.contains("highlight-dest")) div.style.zIndex = "3";
             }
         }
 
+        // Стандартная раскраска (Старт/Финиш/Плен...)
         const pid = String(point.id);
         if (pid.includes("Старт")) div.style.backgroundColor = "#4CAF50";
         else if (pid.includes("Финиш")) div.style.backgroundColor = "#FFD700";

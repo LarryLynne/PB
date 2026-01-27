@@ -42,6 +42,7 @@
     <div id="test-badge" style="display: none;">Debug mode</div>
         <div id="debug-panel">
         <h3 style="margin: 0 0 10px 0; color: #FFD700;">Настройки UI</h3>
+        
         <label>
             Фон:
             <input type="color" id="cfg-bg" value="#948181" oninput="game.updateStyle('--bg-color', this.value)">
@@ -57,6 +58,20 @@
         <label>
             Линии:
             <input type="color" id="cfg-line" value="#444444" oninput="game.updateStyle('--line-color', this.value)">
+        </label>
+
+        <div style="margin-top: 10px; border-top: 1px solid #555; padding-top: 5px;"></div>
+        <label>
+            Спец. (6):
+            <input type="color" value="#ff0000" oninput="game.updateStyle('--spec-6', this.value)">
+        </label>
+        <label>
+            Спец. (3):
+            <input type="color" value="#ffeb3b" oninput="game.updateStyle('--spec-3', this.value)">
+        </label>
+        <label>
+            Стрелки:
+            <input type="color" value="#00ffff" oninput="game.updateStyle('--arrow-color', this.value)">
         </label>
     </div>
     <div id="game-field">

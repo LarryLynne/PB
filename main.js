@@ -113,7 +113,7 @@ const game = {
             setTimeout(() => makeBotMove(this), 500);
         } else {
             // Если человек
-        if (rolledSix && (hasPiecesInStart || hasPiecesInPrison)) return; 
+        //if (rolledSix && (hasPiecesInStart || hasPiecesInPrison)) return; 
         
         // Проверяем, есть ли вообще возможные ходы
         const canMove1 = this.checkIfMovePossible(this.dice[0]);
@@ -123,16 +123,17 @@ const game = {
             // === ИСПРАВЛЕНИЕ: ДУБЛЬ 6 ДАЕТ ПРАВО ПЕРЕБРОСА ДАЖЕ ЕСЛИ НЕТ ХОДОВ ===
             if (this.dice[0] === 6 && this.dice[1] === 6) {
                 // Это дубль 6! Ходов нет, но игрок должен кинуть еще раз.
-                // Мы НЕ помечаем кубики как использованные.
-                // Мы просто оставляем фазу 'roll' и обновляем UI.
-                
-                // Можно добавить сообщение для понятности (опционально)
-                const statusEl = document.getElementById('status-msg');
-                if (statusEl) statusEl.innerText = "6:6! Нет ходов, но бросай еще!";
-
-                // Сбрасываем выбор (на всякий случай) и выходим, давая нажать Throw снова
                 this.diceUsed = [false, false];
+                
+                // --- ДОБАВИТЬ ЭТУ СТРОКУ ---
+                this.phase = 'roll'; 
+                // ---------------------------
+
                 this.refreshView();
+                
+                // Если это бот, нужно пнуть его, чтобы он кинул снова
+                if (player.isBot) setTimeout(() => this.rollDice(), 800);
+                
                 return;
             }
             // ======================================================================
@@ -184,12 +185,22 @@ const game = {
         return null;
     },
 
-    checkPath: function(startPos, steps, playerId) {
+    // main.js
+
+    // main.js -> checkPath
+
+    // main.js -> checkPath (ИСПРАВЛЕННАЯ)
+
+    checkPath: function(startPos, steps, playerId, distOverride = null) {
         const player = this.players.find(p => p.id === playerId);
         const settings = playerSettings[playerId];
         let currentPos = startPos;
         const pieceObj = player.pieces.find(p => p.pos === startPos);
-        let currentDist = pieceObj ? pieceObj.dist : 0;
+        
+        // Берем виртуальную дистанцию, если она передана
+        let currentDist = (distOverride !== null) 
+                          ? distOverride 
+                          : (pieceObj ? pieceObj.dist : 0);
 
         for (let s = 1; s <= steps; s++) {
             let nextPos = null;
@@ -198,8 +209,10 @@ const game = {
                 if (currStep + 1 > 5) return { valid: false, reason: "wall" };
                 nextPos = `Финиш${playerId}_${currStep + 1}`;
             } else if (typeof currentPos === 'number') {
+                // === ВЕРНУЛИ КАК БЫЛО: -1 (Правильное направление) ===
                 if (currentPos == settings.gate && currentDist > 30) nextPos = `Финиш${playerId}_1`;
-                else nextPos = (currentPos - 1 + 216) % 216;
+                else nextPos = (currentPos - 1 + 216) % 216; 
+                // =====================================================
             } else return { valid: true, pos: null }; 
 
             if (s !== steps) {
@@ -217,6 +230,7 @@ const game = {
                 hops++;
             }
         }
+        
         const obstacle = this.getPieceAt(finalPos);
         if (obstacle) {
             if (obstacle.player.id === playerId) {
@@ -263,10 +277,17 @@ const game = {
         return false;
     },
 
-    calculateMoveOptions: function(pieceIndex, steps, playerId) {
+    // main.js
+
+    // main.js -> calculateMoveOptions
+
+    calculateMoveOptions: function(pieceIndex, steps, playerId, overridePos = null, overrideDist = null) {
         const player = this.players.find(p => p.id === playerId);
         const pieceObj = player.pieces[pieceIndex];
-        const currentPos = pieceObj.pos;
+        
+        // Гарантируем, что 0 не превратится в null
+        let currentPos = (overridePos !== null) ? overridePos : pieceObj.pos;
+        
         const options = [];
 
         if (this.phase === 'bonus') {
@@ -278,19 +299,27 @@ const game = {
         }
         else if (centerEntryPoints.includes(currentPos) && steps === 3) {
             options.push({ target: "Центр", dist: 0 });
-            const standardMove = this.checkPath(currentPos, steps, playerId);
+            const standardMove = this.checkPath(currentPos, steps, playerId, overrideDist);
             if (standardMove.valid) options.push({ target: standardMove.pos, dist: steps });
         }
-        else if (typeof currentPos === 'number' && conditionalTeleports[currentPos] && conditionalTeleports[currentPos].dice === steps) {
-            const rule = conditionalTeleports[currentPos];
-            const distTeleport = (rule.target - currentPos + 216) % 216;
-            const targetOccupant = this.getPieceAt(rule.target);
-            if (!targetOccupant || targetOccupant.player.id !== playerId) {
-                options.push({ target: rule.target, dist: distTeleport });
+        // === ПРОВЕРКА ТЕЛЕПОРТОВ ===
+        else if (typeof currentPos === 'number' && conditionalTeleports[currentPos]) {
+            // Проверяем кубик и телепорт
+            if (conditionalTeleports[currentPos].dice === steps) {
+                const rule = conditionalTeleports[currentPos];
+                const distTeleport = (rule.target - currentPos + 216) % 216;
+                const targetOccupant = this.getPieceAt(rule.target);
+                
+                // Разрешаем, если пусто ИЛИ если там враг
+                if (!targetOccupant || targetOccupant.player.id !== playerId) {
+                    options.push({ target: rule.target, dist: distTeleport });
+                }
             }
-            const standardMove = this.checkPath(currentPos, steps, playerId);
+            // Обычный ход добавляем всегда (если валиден)
+            const standardMove = this.checkPath(currentPos, steps, playerId, overrideDist);
             if (standardMove.valid) options.push({ target: standardMove.pos, dist: steps });
         }
+        // ============================
         else {
             if (String(currentPos).includes("Старт") || String(currentPos).includes("Плен")) {
                 if (steps === 6) {
@@ -303,8 +332,11 @@ const game = {
                     }
                 }
             } else {
-                const check = this.checkPath(currentPos, steps, playerId);
-                if (check.valid) options.push({ target: check.pos, dist: (typeof check.pos === 'number' && typeof currentPos === 'number') ? steps : 0 });
+                const check = this.checkPath(currentPos, steps, playerId, overrideDist);
+                if (check.valid) {
+                    const distVal = (typeof check.pos === 'number' && typeof currentPos === 'number') ? steps : 0;
+                    options.push({ target: check.pos, dist: distVal });
+                }
             }
         }
         return options;
@@ -334,37 +366,169 @@ const game = {
         }
     },
 
+    // main.js
+
+    // main.js -> handlePieceClick
+
     handlePieceClick: function(pieceIndex, ownerId) {
-        // Если ходит бот, игнорируем клики человека по его фишкам
-        if (this.players.find(p => p.id === ownerId).isBot) return;
+        const player = this.players.find(p => p.id === ownerId);
+        if (player.isBot) return; 
 
-        const targetPlayer = this.players.find(p => p.id === ownerId);
-        const targetPiece = targetPlayer.pieces[pieceIndex];
-
-        if (this.activeDestinations.includes(targetPiece.pos)) {
-            this.handlePointClick(targetPiece.pos);
-            return;
-        }
         if (this.phase === 'bonus') {
             if (ownerId !== this.bonusPlayerId) return;
             this.executeMove(pieceIndex, 6, true);
             return;
         }
-        if (this.phase !== 'move') return;
-        if (ownerId !== this.players[this.turn].id) return; 
-        if (this.selectedDieIndex === null) return; 
 
-        this.executeMove(pieceIndex, this.dice[this.selectedDieIndex], false);
+        if (this.phase !== 'move') return;
+        if (ownerId !== this.players[this.turn].id) return;
+
+        if (this.pendingMoveInfo && this.pendingMoveInfo.pieceIndex === pieceIndex) {
+            this.activeDestinations = [];
+            this.pendingMoveInfo = null;
+            this.selectedDieIndex = null;
+            this.refreshView();
+            return;
+        }
+
+        if (this.selectedDieIndex !== null) {
+            this.executeMove(pieceIndex, this.dice[this.selectedDieIndex], false);
+            return;
+        }
+
+        console.log(`--- CLICKED PIECE ${pieceIndex} (Player ${ownerId}) ---`);
+        const optionsMap = {}; 
+        const activeDestinations = [];
+
+        const getStepOptions = (dieIdx) => {
+             return this.calculateMoveOptions(pieceIndex, this.dice[dieIdx], player.id);
+        };
+
+        // 1. Одиночные ходы
+        [0, 1].forEach(dieIdx => {
+            if (!this.diceUsed[dieIdx]) {
+                const opts = getStepOptions(dieIdx);
+                opts.forEach(opt => {
+                    if (!optionsMap[opt.target]) {
+                        optionsMap[opt.target] = { 
+                            sequence: [{dieIdx: dieIdx, steps: this.dice[dieIdx], target: opt.target, dist: opt.dist}],
+                            totalDist: opt.dist 
+                        };
+                        activeDestinations.push(opt.target);
+                    }
+                });
+            }
+        });
+
+        // 2. Комбо ходы
+        if (!this.diceUsed[0] && !this.diceUsed[1]) {
+            const startMoves = { ...optionsMap }; 
+            
+            Object.keys(startMoves).forEach(key => {
+                const firstMoveData = startMoves[key];
+                const firstMove = firstMoveData.sequence[0];
+                
+                const startPosForStep2 = firstMove.target; 
+                const currentPieceDist = player.pieces[pieceIndex].dist;
+                const distAtIntermediatePoint = currentPieceDist + firstMove.dist;
+                
+                const remainingDieIdx = (firstMove.dieIdx === 0) ? 1 : 0;
+                const step2Val = this.dice[remainingDieIdx];
+
+                console.log(`COMBO CHECK: From ${startPosForStep2}, Step: ${step2Val}`);
+
+                if (String(startPosForStep2).includes("Финиш") || startPosForStep2 === "ESCAPE_PRISON") return;
+
+                const secondStepOptions = this.calculateMoveOptions(
+                    pieceIndex, 
+                    step2Val, 
+                    player.id, 
+                    startPosForStep2,        
+                    distAtIntermediatePoint  
+                );
+                
+                console.log(` > Options found:`, secondStepOptions);
+
+                secondStepOptions.forEach(opt => {
+                     const finalTarget = opt.target;
+                     if (!optionsMap[finalTarget]) {
+                        optionsMap[finalTarget] = {
+                            sequence: [
+                                firstMove,
+                                { dieIdx: remainingDieIdx, steps: step2Val, target: finalTarget, dist: opt.dist }
+                            ],
+                            totalDist: firstMove.dist + opt.dist
+                        };
+                        activeDestinations.push(finalTarget);
+                     }
+                });
+            });
+        }
+
+        if (activeDestinations.length > 0) {
+            this.activeDestinations = activeDestinations;
+            this.pendingMoveInfo = { 
+                pieceIndex, 
+                playerId: ownerId, 
+                complexOptions: optionsMap 
+            };
+            this.refreshView();
+        }
     },
 
+    // --- НОВАЯ ОБРАБОТКА КЛИКА ПО ТОЧКЕ ---
     handlePointClick: function(targetId) {
         if (!this.activeDestinations.includes(targetId)) return;
-        const info = this.pendingMoveInfo;
-        const distIncrease = info.optionsMap[targetId];
-        this.finalizeMove(info.pieceIndex, targetId, info.isBonus, info.steps, distIncrease);
+        if (!this.pendingMoveInfo) return;
+
+        if (this.pendingMoveInfo.complexOptions) {
+            // Запуск цепочки
+            const moveData = this.pendingMoveInfo.complexOptions[targetId];
+            if (moveData) {
+                this.executeSequence(this.pendingMoveInfo.pieceIndex, moveData.sequence, 0);
+            }
+        } else {
+            // Старый режим (для совместимости)
+            const info = this.pendingMoveInfo;
+            this.finalizeMove(info.pieceIndex, targetId, info.isBonus, info.steps, info.optionsMap[targetId]);
+        }
+
         this.activeDestinations = [];
         this.pendingMoveInfo = null;
         this.refreshView();
+    },
+
+    // --- РЕКУРСИВНОЕ ВЫПОЛНЕНИЕ ЦЕПОЧКИ ХОДОВ ---
+    executeSequence: function(pieceIndex, sequence, stepIdx) {
+        // Определяем, последний ли это шаг
+        const isLastStep = (stepIdx === sequence.length - 1);
+        
+        // Включаем флаг "Комбо идет", если это НЕ последний шаг.
+        // Это запретит checkEndTurn сжигать кубики и завершать ход раньше времени.
+        this.isComboActive = !isLastStep;
+
+        const move = sequence[stepIdx];
+        
+        // Явно выбираем кубик, чтобы finalizeMove знала, какой сжечь
+        this.selectedDieIndex = move.dieIdx;
+
+        // Выполняем ход
+        this.finalizeMove(pieceIndex, move.target, false, move.steps, move.dist);
+
+        // Если есть следующий шаг
+        if (!isLastStep) {
+            setTimeout(() => {
+                // Проверяем, жива ли еще фишка и не закончилась ли игра
+                const player = this.players.find(p => p.pieces[pieceIndex]);
+                if (player && !player.isFinished) {
+                    this.executeSequence(pieceIndex, sequence, stepIdx + 1);
+                } else {
+                    // Если фишка исчезла (плен?), снимаем флаг
+                    this.isComboActive = false;
+                    this.checkEndTurn();
+                }
+            }, 400);
+        }
     },
 
     processPrisonEscape: function(player, currentPos) {
@@ -511,6 +675,7 @@ const game = {
     },
 
     checkEndTurn: function() {
+        if (this.isComboActive) return;
         const usedCount = (this.diceUsed[0] ? 1 : 0) + (this.diceUsed[1] ? 1 : 0);
         if (usedCount === 2) {
             if (this.dice[0] === 6 && this.dice[1] === 6) {
