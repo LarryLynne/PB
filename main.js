@@ -97,9 +97,9 @@ const game = {
         this.phase = 'move'; 
 
         // Автовыбор дубля
-        if (this.dice[0] === this.dice[1] && this.checkIfMovePossible(this.dice[0])) {
-            this.selectedDieIndex = 0;
-        }
+        //if (this.dice[0] === this.dice[1] && this.checkIfMovePossible(this.dice[0])) {
+        //    this.selectedDieIndex = 0;
+        //}
 
         this.refreshView(); 
 
@@ -366,14 +366,13 @@ const game = {
         }
     },
 
-    // main.js
-
-    // main.js -> handlePieceClick
+   // main.js
 
     handlePieceClick: function(pieceIndex, ownerId) {
         const player = this.players.find(p => p.id === ownerId);
         if (player.isBot) return; 
 
+        // Если бонусный ход (выход из плена)
         if (this.phase === 'bonus') {
             if (ownerId !== this.bonusPlayerId) return;
             this.executeMove(pieceIndex, 6, true);
@@ -383,34 +382,40 @@ const game = {
         if (this.phase !== 'move') return;
         if (ownerId !== this.players[this.turn].id) return;
 
+        // Если уже выбрана эта же фишка — отменяем выбор (чтобы можно было передумать)
         if (this.pendingMoveInfo && this.pendingMoveInfo.pieceIndex === pieceIndex) {
             this.activeDestinations = [];
             this.pendingMoveInfo = null;
-            this.selectedDieIndex = null;
+            this.selectedDieIndex = null; // Сброс выбора кубика
             this.refreshView();
             return;
         }
 
+        // Если пользователь ЯВНО выбрал кубик (нажал на плашку внизу), уважаем его выбор
         if (this.selectedDieIndex !== null) {
             this.executeMove(pieceIndex, this.dice[this.selectedDieIndex], false);
             return;
         }
 
+        // --- ЛОГИКА АВТОМАТИЧЕСКОГО КОМБО ---
         console.log(`--- CLICKED PIECE ${pieceIndex} (Player ${ownerId}) ---`);
         const optionsMap = {}; 
         const activeDestinations = [];
 
+        // Вспомогательная функция поиска ходов
         const getStepOptions = (dieIdx) => {
              return this.calculateMoveOptions(pieceIndex, this.dice[dieIdx], player.id);
         };
 
-        // 1. Одиночные ходы
+        // 1. Собираем обычные ходы (по одному кубику)
         [0, 1].forEach(dieIdx => {
             if (!this.diceUsed[dieIdx]) {
                 const opts = getStepOptions(dieIdx);
                 opts.forEach(opt => {
+                    // Если такой цели еще нет, добавляем
                     if (!optionsMap[opt.target]) {
                         optionsMap[opt.target] = { 
+                            // Важно: помечаем, что это простой ход
                             sequence: [{dieIdx: dieIdx, steps: this.dice[dieIdx], target: opt.target, dist: opt.dist}],
                             totalDist: opt.dist 
                         };
@@ -420,24 +425,29 @@ const game = {
             }
         });
 
-        // 2. Комбо ходы
+        // 2. Ищем КОМБО (если оба кубика свободны)
         if (!this.diceUsed[0] && !this.diceUsed[1]) {
-            const startMoves = { ...optionsMap }; 
+            // Берем копию уже найденных первых шагов
+            // (Важно: Object.keys вернет ID точек, куда можно ступить первым шагом)
+            const firstStepTargets = Object.keys(optionsMap); 
             
-            Object.keys(startMoves).forEach(key => {
-                const firstMoveData = startMoves[key];
-                const firstMove = firstMoveData.sequence[0];
+            firstStepTargets.forEach(targetKey => {
+                const firstMoveData = optionsMap[targetKey];
+                // Берем первый вариант (обычно он один) попадания в эту точку
+                const firstMove = firstMoveData.sequence[0]; 
                 
+                // Проверяем, можно ли пойти дальше
                 const startPosForStep2 = firstMove.target; 
+                
+                // Нельзя продолжать ход, если зашли на финиш или вышли из тюрьмы
+                if (String(startPosForStep2).includes("Финиш") || startPosForStep2 === "ESCAPE_PRISON") return;
+
                 const currentPieceDist = player.pieces[pieceIndex].dist;
                 const distAtIntermediatePoint = currentPieceDist + firstMove.dist;
                 
+                // Какой кубик остался?
                 const remainingDieIdx = (firstMove.dieIdx === 0) ? 1 : 0;
                 const step2Val = this.dice[remainingDieIdx];
-
-                console.log(`COMBO CHECK: From ${startPosForStep2}, Step: ${step2Val}`);
-
-                if (String(startPosForStep2).includes("Финиш") || startPosForStep2 === "ESCAPE_PRISON") return;
 
                 const secondStepOptions = this.calculateMoveOptions(
                     pieceIndex, 
@@ -447,10 +457,11 @@ const game = {
                     distAtIntermediatePoint  
                 );
                 
-                console.log(` > Options found:`, secondStepOptions);
-
                 secondStepOptions.forEach(opt => {
                      const finalTarget = opt.target;
+                     // Добавляем комбо-вариант
+                     // Если такая точка уже была (как одиночный ход), мы ее ПЕРЕЗАПИШЕМ комбо-ходом? 
+                     // Нет, лучше оставить выбор игроку. Но обычно дальняя точка уникальна.
                      if (!optionsMap[finalTarget]) {
                         optionsMap[finalTarget] = {
                             sequence: [
@@ -465,15 +476,39 @@ const game = {
             });
         }
 
-        if (activeDestinations.length > 0) {
-            this.activeDestinations = activeDestinations;
-            this.pendingMoveInfo = { 
-                pieceIndex, 
-                playerId: ownerId, 
-                complexOptions: optionsMap 
-            };
-            this.refreshView();
+        // Если ходов нет вообще
+        if (activeDestinations.length === 0) return;
+
+        // === УЛУЧШЕНИЕ: ЕСЛИ ВСЕГО ОДИН ХОД — ДЕЛАЕМ ЕГО СРАЗУ ===
+        // (Но только если это не опасный ход, чтобы игрок успел понять, что происходит.
+        // Хотя для динамики лучше сразу).
+        /* Если вы хотите "мгновенный ход", раскомментируйте блок ниже.
+           Если хотите всегда видеть подсветку — оставьте закомментированным.
+           
+           Я рекомендую оставить подсветку, так как мгновенный прыжок может запутать, 
+           куда именно полетела фишка. Но если вас бесит лишний клик — включайте.
+        */
+        if (activeDestinations.length === 1) {
+             const target = activeDestinations[0];
+             const moveData = optionsMap[target];
+             
+             // Запускаем ход (или цепочку ходов)
+             this.executeSequence(pieceIndex, moveData.sequence, 0);
+             
+             // Очищаем состояние выбора
+             this.activeDestinations = [];
+             this.pendingMoveInfo = null;
+             this.refreshView();
+             return;
         }
+
+        this.activeDestinations = activeDestinations;
+        this.pendingMoveInfo = { 
+            pieceIndex, 
+            playerId: ownerId, 
+            complexOptions: optionsMap 
+        };
+        this.refreshView();
     },
 
     // --- НОВАЯ ОБРАБОТКА КЛИКА ПО ТОЧКЕ ---
@@ -623,13 +658,13 @@ const game = {
                 this.selectedDieIndex = null; 
             }
             
-            const usedCount = (this.diceUsed[0] ? 1 : 0) + (this.diceUsed[1] ? 1 : 0);
+            /*const usedCount = (this.diceUsed[0] ? 1 : 0) + (this.diceUsed[1] ? 1 : 0);
             if (usedCount === 1) {
                 const remainingIndex = this.diceUsed[0] ? 1 : 0;
                 if (this.checkIfMovePossible(this.dice[remainingIndex])) {
                     this.selectedDieIndex = remainingIndex;
                 }
-            }
+            }*/
 
             // Проверка победы
             const allHome = player.pieces.every(p => String(p.pos).includes("Финиш"));
@@ -639,6 +674,9 @@ const game = {
                 player.isFinished = true;
                 justWon = true; 
             }
+
+            this.pendingMoveInfo = null; 
+            this.activeDestinations = [];
             
             this.checkEndTurn();
             this.refreshView();
@@ -771,8 +809,35 @@ game.init();
 // Вешаем слушатели
 document.getElementById('dice1').onclick = () => game.selectDie(0);
 document.getElementById('dice2').onclick = () => game.selectDie(1);
+// main.js (в самом низу файла)
+
 document.addEventListener('keydown', function(event) {
+    // 1. Тестовый режим (Shift + T)
     if (event.shiftKey && (event.code === 'KeyT' || event.key === 'T' || event.key === 'Е')) {
         game.toggleTestMode();
+    }
+
+    // 2. Бросок кубиков (Пробел)
+    if (event.code === 'Space' || event.key === ' ') {
+        // Отменяем стандартное поведение (чтобы страница не скроллилась вниз)
+        event.preventDefault(); 
+        
+        // Получаем текущего игрока
+        const player = game.players[game.turn];
+
+        // Разрешаем бросок только если:
+        // - Сейчас фаза 'roll' (ждем броска)
+        // - Игрок существует и это НЕ бот
+        // - Кнопка броска физически не заблокирована (на всякий случай)
+        if (game.phase === 'roll' && player && !player.isBot) {
+            // Визуальный эффект нажатия кнопки (опционально, для красоты)
+            const btn = document.getElementById('roll-btn');
+            if (btn) {
+                btn.style.transform = "scale(0.95)";
+                setTimeout(() => btn.style.transform = "", 100);
+            }
+
+            game.rollDice();
+        }
     }
 });

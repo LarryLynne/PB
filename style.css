@@ -22,11 +22,43 @@ body {
     overflow: hidden; user-select: none;
 }
 #game-field { position: relative; background-color:var(--bg-color); }
+
+
+.point-wrapper {
+    position: absolute;
+    /* Огромная зона клика (примерно подушечка пальца) */
+    width: 60px; 
+    height: 60px;
+    
+    /* Центруем сам контейнер на координатах */
+    transform: translate(-50%, -50%);
+    
+    z-index: 2;
+    cursor: pointer;
+    
+    /* Центруем визуальную точку внутри этого квадрата */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    
+    /* Раскомментируй строку ниже, чтобы увидеть зоны клика (красные квадраты) */
+    /* background-color: rgba(255, 0, 0, 0.2); */
+}
+
 .point {
-    width: var(--dot-size);  /* БЫЛО: 8px */
-    height: var(--dot-size); /* БЫЛО: 8px */
-    border-radius: 50%; position: absolute;
-    transform: translate(-50%, -50%); z-index: 2; box-sizing: border-box;
+    width: var(--dot-size);
+    height: var(--dot-size);
+    border-radius: 50%;
+    
+    /* ВАЖНО: Убираем absolute и transform, так как теперь позиционирует wrapper */
+    position: relative; 
+    transform: none !important;
+    top: auto !important;
+    left: auto !important;
+    
+    box-sizing: border-box;
+    /* z-index убираем, он теперь у родителя */
+    pointer-events: none; /* Пропускаем клики сквозь красоту прямо во wrapper */
 }
 
 .point::before {
@@ -36,16 +68,20 @@ body {
     left: 50%;
     transform: translate(-50%, -50%);
     
-    /* Размер зоны клика (в пикселях, чтобы удобно было пальцем) */
-    width: 30px; 
-    height: 30px;
+    /* УВЕЛИЧИВАЕМ ЗОНУ КЛИКА */
+    width: 50px;  /* Было 30px */
+    height: 50px; /* Было 30px */
     
     border-radius: 50%;
-    z-index: 10; /* Лежит поверх самой точки */
+    z-index: 10; 
     cursor: pointer;
-    
-    /* Убери комментарий ниже, если хочешь увидеть эту зону (для теста) */
-    /* background-color: rgba(255, 0, 0, 0.3); */
+    display: none;
+    /* Для отладки (чтобы видеть зоны) раскомментируйте на секунду: */
+    /* background-color: rgba(255,0,0,0.2); */
+}
+
+.point-wrapper.active-zone {
+    z-index: 200 !important;
 }
 
 /* Для активных целей делаем зону еще больше (чтоб совсем легко попасть) */
@@ -54,13 +90,17 @@ body {
     position: absolute;
     top: 50%; left: 50%;
     transform: translate(-50%, -50%);
-    width: 100%; height: 100%;
     border-radius: 50%;
     border: 2px solid var(--dest-color);
     opacity: 0;
-    z-index: -1;
     pointer-events: none;
     animation: fog-ripple 1.5s infinite ease-out;
+
+    z-index: 201 !important; /* Выше чем сама точка (200) */
+    width: 60px; /* Активную цель делаем ЕЩЕ больше для удобства */
+    height: 60px;
+    border: none; /* Убираем рамку, если она там была */
+    animation: none; /* Убираем ripple с зоны клика, он должен быть отдельным элементом */
 }
 
 @keyframes fog-breath {
@@ -296,6 +336,8 @@ svg { z-index: 1; }
     /* Небольшая анимация самой точки */
     animation: core-pulse 1.5s infinite ease-in-out;
     will-change: transform, box-shadow;
+    cursor: pointer;
+    pointer-events: auto;
 }
 
 .point[id^="Финиш"].highlight-dest {

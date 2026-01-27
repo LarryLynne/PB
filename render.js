@@ -46,7 +46,7 @@ export function renderGame(game) {
     arrows.forEach(arrow => arrow.remove());
     
     // Очистка точек
-    gameField.querySelectorAll(".point").forEach(el => el.remove());
+    gameField.querySelectorAll(".point-wrapper").forEach(el => el.remove());
 
     // 2. Отрисовка Линий
     points.forEach(point => {
@@ -90,39 +90,45 @@ export function renderGame(game) {
 
     // 4. Отрисовка Точек
     points.forEach(point => {
+        // 1. Создаем невидимый контейнер (Hitbox)
+        const wrapper = document.createElement("div");
+        wrapper.className = "point-wrapper";
+        wrapper.style.left = `${point.xPercent}%`;
+        wrapper.style.top = `${point.yPercent}%`;
+
+        // 2. Создаем визуальную точку
         const div = document.createElement("div");
         div.className = "point";
-        div.style.left = `${point.xPercent}%`;
-        div.style.top = `${point.yPercent}%`;
         
-        // Подсветка целей
+        // --- Логика Подсветки (Highlight) ---
         if (game.activeDestinations.includes(point.id)) {
+            // Класс для красоты вешаем на точку
             div.classList.add("highlight-dest");
-            // ПЕРЕДАЕМ ЦВЕТ ИГРОКА В CSS-ПЕРЕМЕННУЮ
+            // Класс для z-index вешаем на контейнер
+            wrapper.classList.add("active-zone");
+            
             div.style.setProperty('--dest-color', activeHighlightColor);
             
-            div.onclick = (e) => {
+            // ВАЖНО: Клик ловит КОНТЕЙНЕР (wrapper), а не точка
+            wrapper.onclick = (e) => {
                 e.stopPropagation();
                 game.handlePointClick(point.id);
             };
         }
         
-        // ЦВЕТНЫЕ ОРЕОЛЫ (Желтые/Красные на поле) — оставляем как есть, но понижаем z-index, если это цель
+        // --- Цветные ореолы (Желтые/Красные) ---
         if (typeof point.id === 'number') {
             if (point.id % 6 === 0) {
-                // ИСПОЛЬЗУЕМ ПЕРЕМЕННУЮ --spec-6
                 div.style.boxShadow = "0 0 0 4px var(--spec-6)";
-                
-                if(!div.classList.contains("highlight-dest")) div.style.zIndex = "3";
+                // Если это не цель, обычные точки тоже должны быть чуть выше линий
+                if (!wrapper.classList.contains("active-zone")) wrapper.style.zIndex = "3";
             } else if (point.id % 3 === 0) {
-                // ИСПОЛЬЗУЕМ ПЕРЕМЕННУЮ --spec-3
                 div.style.boxShadow = "0 0 0 4px var(--spec-3)";
-                
-                if(!div.classList.contains("highlight-dest")) div.style.zIndex = "3";
+                if (!wrapper.classList.contains("active-zone")) wrapper.style.zIndex = "3";
             }
         }
 
-        // Стандартная раскраска (Старт/Финиш/Плен...)
+        // --- Раскраска (Старт, Финиш и т.д.) ---
         const pid = String(point.id);
         if (pid.includes("Старт")) div.style.backgroundColor = "#4CAF50";
         else if (pid.includes("Финиш")) div.style.backgroundColor = "#FFD700";
@@ -131,7 +137,9 @@ export function renderGame(game) {
         else if ([0, 54, 108, 162].includes(point.id)) div.style.backgroundColor = "#fff";
         else div.style.backgroundColor = "var(--dot-color)";
         
-        gameField.appendChild(div);
+        // Сборка: Вкладываем точку в контейнер, контейнер на поле
+        wrapper.appendChild(div);
+        gameField.appendChild(wrapper);
     });
 
     // 5. ОТРИСОВКА ФИШЕК (ИСПРАВЛЕННАЯ ЛОГИКА BLINK)
