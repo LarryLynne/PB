@@ -1,7 +1,7 @@
 :root {
     --bg-color: #a46b4c;       /* Цвет фона по умолчанию */
     --dot-color: #4c3434;      /* Цвет обычных точек */
-    --dot-size: 5px;           /* Размер точек */
+    --dot-size: 15%;           /* Размер точек */
     --line-color: #523838;
 
     --spec-6: #b11010;      /* Для кратных 6 (Красные) */
@@ -21,6 +21,8 @@ body {
     height: 100dvh; background-color: var(--bg-color); color: white;
     overflow: hidden; user-select: none;
 }
+
+
 #game-field { position: relative; background-color:var(--bg-color); }
 
 
@@ -564,7 +566,8 @@ input:checked + .slider:before {
 
 /* Панели управления (боковые/верхние) */
 .control-panel {
-    flex: 1; /* Занимают свободное место */
+    /* flex: 1;  <-- БЫЛО */
+    flex: 2; /* <-- СТАЛО. Расширяем боковые панели (теперь пропорция 2:3:2) */
     display: flex;
     justify-content: center;
     align-items: center;
@@ -590,8 +593,34 @@ input:checked + .slider:before {
     align-items: center;
     position: relative;
     z-index: 10;
-    border: none !important;
-    box-shadow: 0 0 50px rgba(0,0,0,0.5);
+    
+    /* --- ВЫПУКЛЫЙ ДИЗАЙН --- */
+    
+    /* 1. Скругленный квадрат */
+    border-radius: 25px; 
+
+    /* 2. Фон совпадает с общим, но нужен для перекрытия теней */
+    /*background-color: var(--bg-color);
+
+    /* 3. Отступы: 
+       padding - чтобы поле не прилипало к краям рамки.
+       margin - чтобы было место для внешних теней. */
+    padding: 3vmin; 
+    margin: 2vmin;
+    box-sizing: border-box; 
+
+    /* 4. Магия 3D объема (Convex Effect) */
+    box-shadow: 
+        /* Светлый блик сверху-слева (имитация источника света) */
+        -10px -10px 30px rgba(255, 255, 255, 0.1),
+        /* Глубокая тень снизу-справа */
+        20px 20px 40px rgba(0, 0, 0, 0.4),
+        /* Внутренний тонкий блик для четкости границы (фаска) */
+        inset 1px 1px 2px rgba(255, 255, 255, 0.3),
+        inset -1px -1px 2px rgba(0, 0, 0, 0.2);
+
+    /* Тонкая полупрозрачная рамка */
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 #game-field {
@@ -650,29 +679,28 @@ input:checked + .slider:before {
 /* 2. MOBILE (Portrait) - Вертикально */
 @media (max-width: 768px) and (orientation: portrait) {
     #main-layout {
-        flex-direction: column; /* Сверху вниз */
+        flex-direction: column; 
     }
     
     .control-panel {
-        flex: 0 0 15%; /* Фиксируем высоту панелей */
+        flex: 0 0 15%; 
         width: 100%;
     }
     
     #field-container {
-        flex: 1; /* Поле занимает всё остальное место */
+        flex: 1; 
         width: 100%;
         
-        /* ВАЖНО: Убираем боковые границы (они для компа) */
-        border: none !important;
+        /* Убираем старый сброс границ, чтобы наш новый красивый бордюр остался */
+        /* border: none !important;  <-- УДАЛИТЬ ИЛИ ЗАКОММЕНТИРОВАТЬ ЭТУ СТРОКУ */
         
-        /* ВАЖНО: Добавляем границы СВЕРХУ и СНИЗУ */
-        /*border-top: 2px solid rgba(255, 215, 0, 0.2);
-        border-bottom: 2px solid rgba(255, 215, 0, 0.2);*/
+        /* Чуть уменьшаем отступы для мобильных, чтобы поле было крупнее */
+        margin: 10px;
+        border-radius: 30px;
     }
     
-    /* Исправил опечатку: нужен пробел перед .dice-group */
     #panel-1.dice-group {
-          transform: rotate(180deg);  /*<-- Если хочешь перевернуть верхние кубики */
+          transform: rotate(180deg);
     }
 }
 

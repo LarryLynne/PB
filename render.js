@@ -182,49 +182,63 @@ export function renderGame(game) {
     });
 }
 
+// render.js -> updateUI
+
 export function updateUI(game, getDiceSvg) {
-    // Массив всех ID кубиков: [Группа1_кубик0, Группа1_кубик1, Группа2_кубик0, Группа2_кубик1]
+    // 1. ОПРЕДЕЛЯЕМ ЦВЕТ АКТИВНОГО ИГРОКА
+    let activePlayer = null;
+    
+    // Если фаза бонуса (выход из плена) - цвет "надзирателя"
+    if (game.phase === 'bonus' && game.bonusPlayerId) {
+        activePlayer = game.players.find(p => p.id === game.bonusPlayerId);
+    } else {
+        // Иначе цвет того, чей ход
+        activePlayer = game.players[game.turn];
+    }
+
+    // Базовый цвет (если вдруг игрока нет - белый)
+    const rawColor = activePlayer ? activePlayer.color : "#ffffff";
+    
+    // МАГИЯ ЦВЕТА: Берем первые 7 символов (#RRGGBB) и добавляем прозрачность (33 = 20%)
+    // Если цвета у тебя в формате #RRGGBBff, то substring(0,7) отрежет прозрачность.
+    const panelColor = rawColor.substring(0, 7) + "33"; 
+
+    // 2. КРАСИМ ПАНЕЛИ
+    const p1 = document.getElementById('panel-1');
+    const p2 = document.getElementById('panel-2');
+    
+    if (p1) p1.style.backgroundColor = panelColor;
+    if (p2) p2.style.backgroundColor = panelColor;
+
+    // 3. ОБНОВЛЯЕМ КУБИКИ (как и раньше)
     const diceIds = [
-        ['dice-set1-0', 'dice-set2-0'], // Индекс 0
-        ['dice-set1-1', 'dice-set2-1']  // Индекс 1
+        ['dice-set1-0', 'dice-set2-0'], 
+        ['dice-set1-1', 'dice-set2-1']  
     ];
     
-    // Обновляем оба комплекта
     [0, 1].forEach(index => {
         const val = game.dice[index];
         const svg = val ? getDiceSvg(val) : '-';
         const isUsed = game.diceUsed[index];
         const isSelected = (game.selectedDieIndex === index);
 
-        // Обходим зеркальные кубики (левый и правый)
         diceIds[index].forEach(id => {
             const el = document.getElementById(id);
             if (el) {
                 el.innerHTML = svg;
                 
-                // Классы для стилей
                 if (isSelected) el.classList.add('selected');
                 else el.classList.remove('selected');
                 
                 if (isUsed) el.classList.add('used');
                 else el.classList.remove('used');
                 
-                // Цвет текущего игрока
-                let activeColor = "#fff";
-                 if (game.phase === 'bonus') {
-                    const warden = game.players.find(p => p.id === game.bonusPlayerId);
-                    if(warden) activeColor = warden.color;
-                } else {
-                    const player = game.players[game.turn];
-                    if (player) activeColor = player.color;
-                }
-                el.style.color = activeColor;
+                // Кубики красим в полный яркий цвет игрока
+                el.style.color = rawColor;
                 el.style.borderColor = isSelected ? "#fff" : "rgba(255,255,255,0.3)";
             }
         });
     });
-
-    // Кнопку roll-btn больше не ищем, её нет
 }
 
 function drawLine(p1, p2, color, width = 2) {
@@ -268,7 +282,7 @@ function updateGameFieldSize() {
     
     // Делаем поле максимально большим квадратом, который влезает в центр
     // Оставляем небольшой отступ (padding), например 10px
-    const size = Math.min(w, h) - 20; 
+    const size = Math.min(w, h);
 
     field.style.width = `${size}px`;
     field.style.height = `${size}px`;

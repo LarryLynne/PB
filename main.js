@@ -402,11 +402,11 @@ const game = {
         if (this.phase !== 'move') return;
         if (ownerId !== this.players[this.turn].id) return;
 
-        // Если уже выбрана эта же фишка — отменяем выбор (чтобы можно было передумать)
+        // Если уже выбрана эта же фишка — отменяем выбор
         if (this.pendingMoveInfo && this.pendingMoveInfo.pieceIndex === pieceIndex) {
             this.activeDestinations = [];
             this.pendingMoveInfo = null;
-            this.selectedDieIndex = null; // Сброс выбора кубика
+            this.selectedDieIndex = null;
             this.refreshView();
             return;
         }
@@ -432,10 +432,8 @@ const game = {
             if (!this.diceUsed[dieIdx]) {
                 const opts = getStepOptions(dieIdx);
                 opts.forEach(opt => {
-                    // Если такой цели еще нет, добавляем
                     if (!optionsMap[opt.target]) {
                         optionsMap[opt.target] = { 
-                            // Важно: помечаем, что это простой ход
                             sequence: [{dieIdx: dieIdx, steps: this.dice[dieIdx], target: opt.target, dist: opt.dist}],
                             totalDist: opt.dist 
                         };
@@ -447,16 +445,12 @@ const game = {
 
         // 2. Ищем КОМБО (если оба кубика свободны)
         if (!this.diceUsed[0] && !this.diceUsed[1]) {
-            // Берем копию уже найденных первых шагов
-            // (Важно: Object.keys вернет ID точек, куда можно ступить первым шагом)
             const firstStepTargets = Object.keys(optionsMap); 
             
             firstStepTargets.forEach(targetKey => {
                 const firstMoveData = optionsMap[targetKey];
-                // Берем первый вариант (обычно он один) попадания в эту точку
                 const firstMove = firstMoveData.sequence[0]; 
                 
-                // Проверяем, можно ли пойти дальше
                 const startPosForStep2 = firstMove.target; 
                 
                 // Нельзя продолжать ход, если зашли на финиш или вышли из тюрьмы
@@ -465,7 +459,6 @@ const game = {
                 const currentPieceDist = player.pieces[pieceIndex].dist;
                 const distAtIntermediatePoint = currentPieceDist + firstMove.dist;
                 
-                // Какой кубик остался?
                 const remainingDieIdx = (firstMove.dieIdx === 0) ? 1 : 0;
                 const step2Val = this.dice[remainingDieIdx];
 
@@ -479,9 +472,6 @@ const game = {
                 
                 secondStepOptions.forEach(opt => {
                      const finalTarget = opt.target;
-                     // Добавляем комбо-вариант
-                     // Если такая точка уже была (как одиночный ход), мы ее ПЕРЕЗАПИШЕМ комбо-ходом? 
-                     // Нет, лучше оставить выбор игроку. Но обычно дальняя точка уникальна.
                      if (!optionsMap[finalTarget]) {
                         optionsMap[finalTarget] = {
                             sequence: [
@@ -496,26 +486,32 @@ const game = {
             });
         }
 
-        // Если ходов нет вообще
         if (activeDestinations.length === 0) return;
 
-        // === УЛУЧШЕНИЕ: ЕСЛИ ВСЕГО ОДИН ХОД — ДЕЛАЕМ ЕГО СРАЗУ ===
-        // (Но только если это не опасный ход, чтобы игрок успел понять, что происходит.
-        // Хотя для динамики лучше сразу).
-        /* Если вы хотите "мгновенный ход", раскомментируйте блок ниже.
-           Если хотите всегда видеть подсветку — оставьте закомментированным.
-           
-           Я рекомендую оставить подсветку, так как мгновенный прыжок может запутать, 
-           куда именно полетела фишка. Но если вас бесит лишний клик — включайте.
-        */
+        // === ИСПРАВЛЕНИЕ ЗДЕСЬ ===
+        // Если всего один вариант хода (обычно при выходе из плена так и есть)
         if (activeDestinations.length === 1) {
              const target = activeDestinations[0];
              const moveData = optionsMap[target];
+
+             // !!! ВАЖНО: ПЕРЕХВАТЫВАЕМ ВЫХОД ИЗ ПЛЕНА !!!
+             if (target === "ESCAPE_PRISON") {
+                 // Указываем, какой кубик использован (он лежит в sequence[0])
+                 this.selectedDieIndex = moveData.sequence[0].dieIdx;
+                 
+                 // Запускаем спец-процедуру выхода
+                 this.processPrisonEscape(player, player.pieces[pieceIndex].pos);
+                 
+                 // Чистим состояние и выходим
+                 this.activeDestinations = [];
+                 this.pendingMoveInfo = null;
+                 this.refreshView();
+                 return;
+             }
+             // ============================================
              
-             // Запускаем ход (или цепочку ходов)
              this.executeSequence(pieceIndex, moveData.sequence, 0);
              
-             // Очищаем состояние выбора
              this.activeDestinations = [];
              this.pendingMoveInfo = null;
              this.refreshView();
