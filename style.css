@@ -688,15 +688,10 @@ input:checked + .slider:before {
     }
     
     #field-container {
-        flex: 1; 
-        width: 100%;
-        
-        /* Убираем старый сброс границ, чтобы наш новый красивый бордюр остался */
-        /* border: none !important;  <-- УДАЛИТЬ ИЛИ ЗАКОММЕНТИРОВАТЬ ЭТУ СТРОКУ */
-        
-        /* Чуть уменьшаем отступы для мобильных, чтобы поле было крупнее */
-        margin: 10px;
-        border-radius: 30px;
+        flex: 1;        /* Занимает все место между панелями */
+        width: auto;    /* Авто-ширина, чтобы слушался margin */
+        margin: 15px;   /* Отступ от краев экрана */
+        border: none !important;
     }
     
     #panel-1.dice-group {
