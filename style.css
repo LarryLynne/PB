@@ -688,10 +688,12 @@ input:checked + .slider:before {
     }
     
     #field-container {
-        flex: 1;        /* Занимает все место между панелями */
-        width: auto;    /* Авто-ширина, чтобы слушался margin */
-        margin: 15px;   /* Отступ от краев экрана */
-        border: none !important;
+        /* Убираем лишнее, оставляем только квадратность из основного блока */
+        /* Можно немного уменьшить размер для телефонов, чтобы кубикам было просторнее */
+        width: 85vmin; 
+        height: 85vmin;
+        margin: auto; /* Центровка работает сама */
+        border: 1px solid rgba(255, 255, 255, 0.05) !important; /* Возвращаем границу */
     }
     
     #panel-1.dice-group {
