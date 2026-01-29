@@ -277,7 +277,7 @@ function updateGameFieldSize() {
     const field = document.getElementById('game-field');
     if (!container || !field) return;
 
-    const w = container.clientWidth;
+    /*const w = container.clientWidth;
     const h = container.clientHeight;
     
     // Делаем поле максимально большим квадратом, который влезает в центр
@@ -289,7 +289,7 @@ function updateGameFieldSize() {
     
     // Сбрасываем старые марджины
     field.style.marginTop = "0";
-    field.style.marginLeft = "0";
+    field.style.marginLeft = "0";*/
 }
 
 // render.js

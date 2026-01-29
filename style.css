@@ -1,7 +1,7 @@
 :root {
     --bg-color: #a46b4c;       /* Цвет фона по умолчанию */
     --dot-color: #4c3434;      /* Цвет обычных точек */
-    --dot-size: 15%;           /* Размер точек */
+    --dot-size: 1.2vmin;           /* Размер точек */
     --line-color: #523838;
 
     --spec-6: #b11010;      /* Для кратных 6 (Красные) */
@@ -23,7 +23,12 @@ body {
 }
 
 
-#game-field { position: relative; background-color:var(--bg-color); }
+#game-field { 
+    position: relative;
+    background-color:var(--bg-color);
+    width: 100%;
+    height: 100%;
+}
 
 
 .point-wrapper {
@@ -370,16 +375,12 @@ svg { z-index: 1; }
 @media (max-width: 768px) and (orientation: portrait) {
     
     #field-container {
-        flex: 1;
-        width: 100%;
-        
-        /* СБРАСЫВАЕМ ВЕРТИКАЛЬНЫЕ ГРАНИЦЫ */
-        border-left: none;
-        border-right: none;
-        
-        /* ДОБАВЛЯЕМ ГОРИЗОНТАЛЬНЫЕ (Сверху и снизу) */
-        border-top: 2px solid rgba(255, 215, 0, 0.2);
-        border-bottom: 2px solid rgba(255, 215, 0, 0.2);
+        /* Убираем лишнее, оставляем только квадратность из основного блока */
+        /* Можно немного уменьшить размер для телефонов, чтобы кубикам было просторнее */
+        width: 85vmin; 
+        height: 85vmin;
+        margin: auto; /* Центровка работает сама */
+        border: 1px solid rgba(255, 255, 255, 0.05) !important; /* Возвращаем границу */
     }
 
     
@@ -587,27 +588,25 @@ input:checked + .slider:before {
 /* Контейнер для поля */
 #field-container {
     /* На ПК поле занимает больше места (60% примерно) */
-    flex: 3; 
+    flex: 0 0 auto;
+    width: 100vmin;
+    height: 100vmin;
+
+    max-width: 60vw;
+    max-height: 60vw; /* Высота тоже уменьшается, чтобы сохранить форму КВАДРАТА */
+    
+    /* 4. Центровка */
+    margin: auto; 
     display: flex;
     justify-content: center;
     align-items: center;
     position: relative;
     z-index: 10;
-    
-    /* --- ВЫПУКЛЫЙ ДИЗАЙН --- */
-    
-    /* 1. Скругленный квадрат */
-    border-radius: 25px; 
 
-    /* 2. Фон совпадает с общим, но нужен для перекрытия теней */
-    /*background-color: var(--bg-color);
-
-    /* 3. Отступы: 
-       padding - чтобы поле не прилипало к краям рамки.
-       margin - чтобы было место для внешних теней. */
+    /* 5. Визуальное оформление (Выпуклый эффект) */
+    border-radius: 15px; 
     padding: 3vmin; 
-    margin: 2vmin;
-    box-sizing: border-box; 
+    box-sizing: border-box;
 
     /* 4. Магия 3D объема (Convex Effect) */
     box-shadow: 
@@ -690,6 +689,7 @@ input:checked + .slider:before {
     #field-container {
         /* Убираем лишнее, оставляем только квадратность из основного блока */
         /* Можно немного уменьшить размер для телефонов, чтобы кубикам было просторнее */
+        flex: 0 0 auto !important;
         width: 85vmin; 
         height: 85vmin;
         margin: auto; /* Центровка работает сама */
