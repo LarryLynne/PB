@@ -333,3 +333,10 @@ export const ALL_PLAYERS_DATA = [
     { id: 3, name: "Малиновый", color: "#eeff00ff"},
     { id: 4, name: "Оранжевый", color: "#ff0000ff" }
 ];
+
+/*export const ALL_PLAYERS_DATA = [
+    { id: 1, name: "Зеленый", color: "#43A047" }, // Спокойный зеленый (Green 600)
+    { id: 2, name: "Синий", color: "#1E88E5" },   // Мягкий синий (Blue 600)
+    { id: 3, name: "Золотой", color: "#FBC02D" }, // Темно-желтый/Золотой (не слепит!)
+    { id: 4, name: "Красный", color: "#E53935" }  // Мягкий красный
+];*/

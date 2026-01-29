@@ -164,7 +164,7 @@ export function renderGame(game) {
                 pieceDiv.style.left = `${loc.xPercent}%`;
                 pieceDiv.style.top = `${loc.yPercent}%`;
                 
-                // === ВОТ ЗДЕСЬ БЫЛА ОШИБКА, ТЕПЕРЬ ИСПРАВЛЕНО ===
+                // === ЛОГИКА BLINK ===
                 if (game.phase === 'bonus' && player.id === game.bonusPlayerId) {
                     // Теперь проверяем: а может ли эта фишка походить на 6?
                     // Функция isMoveValidForPiece доступна через объект game
@@ -196,11 +196,14 @@ export function updateUI(game, getDiceSvg) {
         activePlayer = game.players[game.turn];
     }
 
-    // Базовый цвет (если вдруг игрока нет - белый)
-    const rawColor = activePlayer ? activePlayer.color : "#ffffff";
+    // Базовый цвет (если вдруг игрока нет - серый)
+    const rawColor = activePlayer ? activePlayer.color : "#333333";
     
-    // МАГИЯ ЦВЕТА: Берем первые 7 символов (#RRGGBB) и добавляем прозрачность (33 = 20%)
-    // Если цвета у тебя в формате #RRGGBBff, то substring(0,7) отрежет прозрачность.
+    // --- ВОТ ЗДЕСЬ МЫ КРАСИМ ВЕСЬ ФОН ---
+    document.body.style.backgroundColor = rawColor; 
+    // ------------------------------------
+
+    // МАГИЯ ЦВЕТА: Берем первые 7 символов (#RRGGBB) и добавляем прозрачность
     const panelColor = rawColor.substring(0, 7) + "33"; 
 
     // 2. КРАСИМ ПАНЕЛИ
@@ -273,26 +276,9 @@ function drawCurvedArrow(p1, p2) {
 }
 
 function updateGameFieldSize() {
-    const container = document.getElementById('field-container');
-    const field = document.getElementById('game-field');
-    if (!container || !field) return;
-
-    /*const w = container.clientWidth;
-    const h = container.clientHeight;
-    
-    // Делаем поле максимально большим квадратом, который влезает в центр
-    // Оставляем небольшой отступ (padding), например 10px
-    const size = Math.min(w, h);
-
-    field.style.width = `${size}px`;
-    field.style.height = `${size}px`;
-    
-    // Сбрасываем старые марджины
-    field.style.marginTop = "0";
-    field.style.marginLeft = "0";*/
+    // Эта функция больше не нужна, так как CSS (aspect-ratio) делает все сам.
+    // Оставляем её пустой, чтобы не было ошибок при resize.
 }
-
-// render.js
 
 export function showCelebration(color, xVal, yVal, isPixels = false) {
     const canvas = document.getElementById('fireworks-canvas');
@@ -310,12 +296,9 @@ export function showCelebration(color, xVal, yVal, isPixels = false) {
     let originX, originY;
 
     if (isPixels) {
-        // Если Main.js уже посчитал пиксели (наш случай) — берем их как есть
         originX = xVal;
         originY = yVal;
-        console.log(`Салют (Pixels): ${Math.round(originX)}:${Math.round(originY)}`);
     } else {
-        // Если пришли проценты (запасной вариант)
         const field = document.getElementById('game-field');
         const rect = field.getBoundingClientRect();
         const pX = (xVal !== undefined) ? xVal : 50;
@@ -323,10 +306,9 @@ export function showCelebration(color, xVal, yVal, isPixels = false) {
         
         originX = rect.left + (rect.width * (pX / 100));
         originY = rect.top + (rect.height * (pY / 100));
-        console.log(`Салют (Percent): ${Math.round(originX)}:${Math.round(originY)}`);
     }
 
-    // 3. Массивы (ОБЯЗАТЕЛЬНО НУЖНЫ)
+    // 3. Массивы
     const particles = [];
     const rockets = [];
 

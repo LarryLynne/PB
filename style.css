@@ -18,7 +18,9 @@ body {
     font-family: Arial, sans-serif;
     margin: 0; padding: 0;
     display: flex; justify-content: center; align-items: center;
-    height: 100dvh; background-color: var(--bg-color); color: white;
+    height: 100dvh; 
+    background-color: #333;
+    color: white;
     overflow: hidden; user-select: none;
 }
 
@@ -136,7 +138,7 @@ body {
     width: 2.5em; 
     height: 2.5em;
     font-size: clamp(16px, 4vw, 24px);
-    background: rgba(255,255,255,0.1); /* Полупрозрачные */
+    background: rgba(255,255,255,0.1); 
     color: white;
     border: 2px solid rgba(255,255,255,0.3);
     border-radius: 8px;
@@ -145,6 +147,8 @@ body {
     backdrop-filter: blur(2px);
     will-change: opacity, transform;
 }
+
+
 
 .dice-box svg {
     width: 80%;       /* Точки занимают 80% места внутри рамки */
@@ -562,7 +566,7 @@ input:checked + .slider:before {
     width: 100vw;
     height: 100dvh; /* dynamic viewport height */
     overflow: hidden;
-    background-color: var(--bg-color);
+    background-color: transparent;
 }
 
 /* Панели управления (боковые/верхние) */
@@ -608,6 +612,7 @@ input:checked + .slider:before {
     padding: 3vmin; 
     box-sizing: border-box;
 
+    background-color: var(--bg-color);
     /* 4. Магия 3D объема (Convex Effect) */
     box-shadow: 
         /* Светлый блик сверху-слева (имитация источника света) */
@@ -636,10 +641,10 @@ input:checked + .slider:before {
 }
 
 /* Сами кубики должны ловить клики (для выбора) */
-.dice-box {
-    width: 3.5em; /* Чуть крупнее */
+/*.dice-box {
+    width: 3.5em; 
     height: 3.5em;
-    /* ... старые стили кубиков (фон, бордюр) ... */
+    /* ... старые стили кубиков (фон, бордюр) ...
     background: rgba(255,255,255,0.1);
     color: white;
     border: 2px solid rgba(255,255,255,0.3);
@@ -647,7 +652,28 @@ input:checked + .slider:before {
     display: flex; justify-content: center; align-items: center;
     backdrop-filter: blur(2px);
     will-change: opacity, transform;
-    pointer-events: auto; /* Включаем клики на самих кубиках */
+    pointer-events: auto; /* Включаем клики на самих кубиках 
+    transition: transform 0.2s, border-color 0.2s;
+}*/
+
+.dice-box {
+    width: 3.5em; 
+    height: 3.5em;
+    
+    /* ИЗМЕНЕНИЕ ЗДЕСЬ: Делаем фон темным (черный с прозрачностью 20%) */
+    /* Было: rgba(255,255,255,0.1) */
+    background: rgba(0, 0, 0, 0.2); 
+    
+    color: white;
+    
+    /* Рамку делаем чуть заметнее */
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    
+    border-radius: 12px;
+    display: flex; justify-content: center; align-items: center;
+    backdrop-filter: blur(2px);
+    will-change: opacity, transform;
+    pointer-events: auto; 
     transition: transform 0.2s, border-color 0.2s;
 }
 
@@ -658,11 +684,19 @@ input:checked + .slider:before {
 }
 
 /* Подсветка выбранного кубика */
-.dice-box.selected {
+/*.dice-box.selected {
     border-color: #fff;
     box-shadow: 0 0 15px rgba(255,255,255,0.5);
     transform: scale(1.1);
+}*/
+
+.dice-box.selected {
+    border-color: #fff;
+    background: rgba(0, 0, 0, 0.4); /* Еще темнее при выборе */
+    box-shadow: 0 0 15px rgba(255,255,255,0.3);
+    transform: scale(1.1);
 }
+
 .dice-box.used {
     opacity: 0.3;
     transform: scale(0.9);
