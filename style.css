@@ -1,7 +1,7 @@
 :root {
     --bg-color: #a46b4c;       /* Цвет фона по умолчанию */
     --dot-color: #4c3434;      /* Цвет обычных точек */
-    --dot-size: 1.2vmin;           /* Размер точек */
+    --dot-size: 1.0vmin;           /* Размер точек */
     --line-color: #523838;
 
     --spec-6: #b11010;      /* Для кратных 6 (Красные) */
@@ -381,8 +381,10 @@ svg { z-index: 1; }
     #field-container {
         /* Убираем лишнее, оставляем только квадратность из основного блока */
         /* Можно немного уменьшить размер для телефонов, чтобы кубикам было просторнее */
-        width: 85vmin; 
-        height: 85vmin;
+        width: 98vw; 
+        height: 98vw; 
+        max-width: 98vw;
+        max-height: 98vw;
         margin: auto; /* Центровка работает сама */
         border: 1px solid rgba(255, 255, 255, 0.05) !important; /* Возвращаем границу */
     }
@@ -596,8 +598,8 @@ input:checked + .slider:before {
     width: 100vmin;
     height: 100vmin;
 
-    max-width: 60vw;
-    max-height: 60vw; /* Высота тоже уменьшается, чтобы сохранить форму КВАДРАТА */
+    max-width: 100vw;
+    max-height: 100vw; /* Высота тоже уменьшается, чтобы сохранить форму КВАДРАТА */
     
     /* 4. Центровка */
     margin: auto; 
@@ -607,7 +609,7 @@ input:checked + .slider:before {
     position: relative;
     z-index: 10;
 
-    /* 5. Визуальное оформление (Выпуклый эффект) */
+    /* 5. Визуальное офорвмление (Выпуклый эффект) */
     border-radius: 15px; 
     padding: 3vmin; 
     box-sizing: border-box;
@@ -724,8 +726,10 @@ input:checked + .slider:before {
         /* Убираем лишнее, оставляем только квадратность из основного блока */
         /* Можно немного уменьшить размер для телефонов, чтобы кубикам было просторнее */
         flex: 0 0 auto !important;
-        width: 85vmin; 
-        height: 85vmin;
+        width: 98vw; 
+        height: 98vw; 
+        max-width: 98vw;
+        max-height: 98vw;
         margin: auto; /* Центровка работает сама */
         border: 1px solid rgba(255, 255, 255, 0.05) !important; /* Возвращаем границу */
     }
