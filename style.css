@@ -718,7 +718,7 @@ input:checked + .slider:before {
     }
     
     .control-panel {
-        flex: 0 0 15%; 
+        flex: 0 0 20%; 
         width: 100%;
     }
     
